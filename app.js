@@ -14,6 +14,16 @@
   const searchInput = document.getElementById("search-input");
   const timeFilter = document.getElementById("time-filter");
 
+  function safeExternalUrl(rawUrl) {
+    try {
+      const parsed = new URL(rawUrl, window.location.origin);
+      if (parsed.protocol === "http:" || parsed.protocol === "https:") return parsed.href;
+    } catch (_) {
+      return null;
+    }
+    return null;
+  }
+
   function severityScore(level) {
     return level === "high" ? 3 : level === "medium" ? 2 : 1;
   }
@@ -49,15 +59,28 @@
       const li = document.createElement("li");
       li.className = `event-card ${evt.id === state.selectedEventId ? "active" : ""}`;
       li.dataset.eventId = evt.id;
-      li.innerHTML = `
-        <strong>${evt.title}</strong>
-        <p>${evt.summary}</p>
-        <div class="event-meta">
-          <span class="sev-pill sev-${evt.severity}">${evt.severity}</span>
-          <span>${evt.category}</span>
-          <span>${new Date(evt.timestamp).toLocaleString()}</span>
-        </div>
-      `;
+
+      const titleEl = document.createElement("strong");
+      titleEl.textContent = evt.title;
+
+      const summaryEl = document.createElement("p");
+      summaryEl.textContent = evt.summary;
+
+      const metaEl = document.createElement("div");
+      metaEl.className = "event-meta";
+
+      const severityEl = document.createElement("span");
+      severityEl.className = `sev-pill sev-${evt.severity}`;
+      severityEl.textContent = evt.severity;
+
+      const categoryEl = document.createElement("span");
+      categoryEl.textContent = evt.category;
+
+      const timestampEl = document.createElement("span");
+      timestampEl.textContent = new Date(evt.timestamp).toLocaleString();
+
+      metaEl.append(severityEl, categoryEl, timestampEl);
+      li.append(titleEl, summaryEl, metaEl);
       li.addEventListener("click", () => selectEvent(evt.id));
       feedEl.appendChild(li);
     }
@@ -71,20 +94,62 @@
     }
 
     detailEl.className = "";
-    detailEl.innerHTML = `
-      <h3>${event.title}</h3>
-      <p>${event.description}</p>
-      <dl class="details-grid">
-        <dt>Coordinates</dt><dd>${event.coords[0].toFixed(3)}, ${event.coords[1].toFixed(3)}</dd>
-        <dt>Timestamp</dt><dd>${new Date(event.timestamp).toLocaleString()}</dd>
-        <dt>Category</dt><dd>${event.category}</dd>
-        <dt>Severity</dt><dd><span class="sev-pill sev-${event.severity}">${event.severity}</span></dd>
-      </dl>
-      <div class="source-links">
-        <h4>Sources</h4>
-        <ul>${event.sources.map((src) => `<li><a href="${src.url}" target="_blank" rel="noopener noreferrer">${src.label}</a></li>`).join("")}</ul>
-      </div>
-    `;
+    detailEl.replaceChildren();
+
+    const titleEl = document.createElement("h3");
+    titleEl.textContent = event.title;
+
+    const descriptionEl = document.createElement("p");
+    descriptionEl.textContent = event.description;
+
+    const detailsGrid = document.createElement("dl");
+    detailsGrid.className = "details-grid";
+
+    const detailRows = [
+      ["Coordinates", `${event.coords[0].toFixed(3)}, ${event.coords[1].toFixed(3)}`],
+      ["Timestamp", new Date(event.timestamp).toLocaleString()],
+      ["Category", event.category]
+    ];
+
+    detailRows.forEach(([term, value]) => {
+      const dt = document.createElement("dt");
+      dt.textContent = term;
+      const dd = document.createElement("dd");
+      dd.textContent = value;
+      detailsGrid.append(dt, dd);
+    });
+
+    const severityTerm = document.createElement("dt");
+    severityTerm.textContent = "Severity";
+    const severityDef = document.createElement("dd");
+    const severityPill = document.createElement("span");
+    severityPill.className = `sev-pill sev-${event.severity}`;
+    severityPill.textContent = event.severity;
+    severityDef.appendChild(severityPill);
+    detailsGrid.append(severityTerm, severityDef);
+
+    const sourceContainer = document.createElement("div");
+    sourceContainer.className = "source-links";
+    const sourceTitle = document.createElement("h4");
+    sourceTitle.textContent = "Sources";
+    const sourceList = document.createElement("ul");
+
+    event.sources.forEach((src) => {
+      const url = safeExternalUrl(src.url);
+      if (!url) return;
+
+      const sourceItem = document.createElement("li");
+      const sourceLink = document.createElement("a");
+      sourceLink.href = url;
+      sourceLink.target = "_blank";
+      sourceLink.rel = "noopener noreferrer";
+      sourceLink.textContent = src.label;
+      sourceItem.appendChild(sourceLink);
+      sourceList.appendChild(sourceItem);
+    });
+
+    sourceContainer.append(sourceTitle, sourceList);
+    detailEl.append(titleEl, descriptionEl, detailsGrid, sourceContainer);
   }
 
   function selectEvent(id) {
