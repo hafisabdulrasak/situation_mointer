@@ -127,10 +127,10 @@
 
   async function loadNewsEvents() {
     const tasks = [
-      NewsIngest.fetchFromGDELT("(conflict OR military OR cyber OR invasion OR strike) AND (Europe OR Middle East OR Red Sea OR Indo-Pacific)", 10),
-      NewsIngest.fetchFromNewsAPI("war OR conflict OR military OR defense", 8),
-      NewsIngest.fetchFromCuratedConflictFeeds(3),
-      NewsIngest.fetchFromX("(war OR conflict OR military OR missile OR drone) lang:en", 8)
+      NewsIngest.fetchFromGDELT("(war OR conflict OR strike OR missile OR drone) AND (Israel OR Gaza OR Lebanon OR Syria OR Iran OR Iraq OR Yemen OR Red Sea)", 12),
+      NewsIngest.fetchFromNewsAPI("(Israel OR Gaza OR Lebanon OR Syria OR Iran OR Yemen) AND (war OR strike OR missile OR drone)", 10),
+      NewsIngest.fetchFromCuratedConflictFeeds(5),
+      NewsIngest.fetchFromX("(Israel OR Gaza OR Lebanon OR Syria OR Iran OR Yemen OR Red Sea) (war OR missile OR strike OR drone) lang:en", 10)
     ];
 
     const settled = await Promise.allSettled(tasks);
