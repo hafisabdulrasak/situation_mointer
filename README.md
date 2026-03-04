@@ -16,7 +16,9 @@ A lightweight, dark-themed OSINT monitoring dashboard built with **pure HTML/CSS
 - News ingest adapters for:
   - GDELT
   - NewsAPI (optional key)
-  - RSS (via rss2json)
+  - Curated conflict RSS feeds (Reuters, BBC, Al Jazeera, Defense News)
+  - X signal ingest through Nitter RSS search
+  - Generic RSS (via rss2json)
 - Search + time filtering (1h, 6h, 24h, 7d)
 - Responsive mobile stack layout
 
@@ -62,13 +64,22 @@ Edit `news.js`:
 const config = {
   newsApiKey: "YOUR_NEWSAPI_KEY",
   gdeltEndpoint: "https://api.gdeltproject.org/api/v2/doc/doc",
-  rssToJsonEndpoint: "https://api.rss2json.com/v1/api.json"
+  rssToJsonEndpoint: "https://api.rss2json.com/v1/api.json",
+  xRssEndpoint: "https://nitter.net/search/rss",
+  curatedConflictFeeds: [
+    "https://www.reuters.com/world/rss",
+    "https://feeds.bbci.co.uk/news/world/rss.xml",
+    "https://www.aljazeera.com/xml/rss/all.xml",
+    "https://www.defensenews.com/arc/outboundfeeds/rss/"
+  ]
 };
 ```
 
 Notes:
 - If `newsApiKey` is empty, NewsAPI ingest is skipped automatically.
 - GDELT endpoint is used by default.
+- X ingest uses Nitter RSS search (`xRssEndpoint`) to avoid requiring X API keys.
+- `curatedConflictFeeds` can be extended with trusted regional or defense feeds.
 - RSS adapter expects a public feed URL.
 
 ## WebSocket Integration

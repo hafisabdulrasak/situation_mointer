@@ -126,15 +126,24 @@
   }
 
   async function loadNewsEvents() {
-    try {
-      const [gdelt, newsApi] = await Promise.all([
-        NewsIngest.fetchFromGDELT("(conflict OR military OR cyber) AND (Europe OR Middle East)", 8),
-        NewsIngest.fetchFromNewsAPI("geopolitics OR conflict", 6)
-      ]);
-      [...gdelt, ...newsApi].forEach(addOrUpdateEvent);
-    } catch (error) {
-      console.warn("News ingest limited:", error.message);
-    }
+    const tasks = [
+      NewsIngest.fetchFromGDELT("(conflict OR military OR cyber OR invasion OR strike) AND (Europe OR Middle East OR Red Sea OR Indo-Pacific)", 10),
+      NewsIngest.fetchFromNewsAPI("war OR conflict OR military OR defense", 8),
+      NewsIngest.fetchFromCuratedConflictFeeds(3),
+      NewsIngest.fetchFromX("(war OR conflict OR military OR missile OR drone) lang:en", 8)
+    ];
+
+    const settled = await Promise.allSettled(tasks);
+    settled.forEach((result) => {
+      if (result.status === "rejected") {
+        console.warn("News source unavailable:", result.reason?.message || result.reason);
+      }
+    });
+
+    settled
+      .filter((result) => result.status === "fulfilled")
+      .flatMap((result) => result.value)
+      .forEach(addOrUpdateEvent);
   }
 
   function initWebSocket() {
