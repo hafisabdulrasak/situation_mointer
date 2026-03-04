@@ -18,15 +18,35 @@
 
   function initMap(elementId = "map") {
     const map = L.map(elementId, {
-      center: [30, 15],
-      zoom: 3,
+      center: [31.8, 44.8],
+      zoom: 5,
+      minZoom: 4,
+      maxZoom: 10,
       zoomControl: true,
-      attributionControl: true
+      attributionControl: true,
+      zoomSnap: 0.5
     });
 
-    L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      maxZoom: 18,
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    const middleEastBounds = L.latLngBounds(
+      [10.5, 24],
+      [41.5, 64.5]
+    );
+    map.setMaxBounds(middleEastBounds.pad(0.2));
+
+    map.createPane("labels");
+    map.getPane("labels").style.pointerEvents = "none";
+
+    L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png", {
+      subdomains: "abcd",
+      maxZoom: 20,
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+    }).addTo(map);
+
+    L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_only_labels/{z}/{x}/{y}{r}.png", {
+      pane: "labels",
+      subdomains: "abcd",
+      maxZoom: 20,
+      attribution: '&copy; <a href="https://carto.com/attributions">CARTO labels</a>'
     }).addTo(map);
 
     const eventCluster = L.markerClusterGroup();
