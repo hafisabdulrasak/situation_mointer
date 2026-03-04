@@ -27,11 +27,11 @@
       zoomSnap: 0.5
     });
 
-    const middleEastBounds = L.latLngBounds(
-      [10.5, 24],
-      [41.5, 64.5]
+    const operationalBounds = L.latLngBounds(
+      [20, -15],
+      [60, 70]
     );
-    map.setMaxBounds(middleEastBounds.pad(0.2));
+    map.setMaxBounds(operationalBounds.pad(0.1));
 
     map.createPane("labels");
     map.getPane("labels").style.pointerEvents = "none";
