@@ -2,7 +2,14 @@
   const config = {
     newsApiKey: "",
     gdeltEndpoint: "https://api.gdeltproject.org/api/v2/doc/doc",
-    rssToJsonEndpoint: "https://api.rss2json.com/v1/api.json"
+    rssToJsonEndpoint: "https://api.rss2json.com/v1/api.json",
+    xRssEndpoint: "https://nitter.net/search/rss",
+    curatedConflictFeeds: [
+      "https://www.reuters.com/world/rss",
+      "https://feeds.bbci.co.uk/news/world/rss.xml",
+      "https://www.aljazeera.com/xml/rss/all.xml",
+      "https://www.defensenews.com/arc/outboundfeeds/rss/"
+    ]
   };
 
   async function fetchFromGDELT(query = "conflict OR crisis", max = 10) {
@@ -72,6 +79,43 @@
     }));
   }
 
+  async function fetchFromCuratedConflictFeeds(maxPerFeed = 3) {
+    const tasks = config.curatedConflictFeeds.map((url) => fetchFromRSS(url));
+    const settled = await Promise.allSettled(tasks);
+
+    return settled
+      .filter((result) => result.status === "fulfilled")
+      .flatMap((result) => result.value.slice(0, maxPerFeed).map((item) => ({
+        ...item,
+        category: "OSINT RSS",
+        severity: inferSeverity(item.title, item.summary)
+      })));
+  }
+
+  async function fetchFromX(searchQuery = "(war OR conflict OR military) lang:en", max = 6) {
+    const params = new URLSearchParams({ q: searchQuery, f: "tweets" });
+    const rssUrl = `${config.xRssEndpoint}?${params}`;
+    const items = await fetchFromRSS(rssUrl);
+
+    return items.slice(0, max).map((item) => ({
+      ...item,
+      id: `x-${item.id}`,
+      category: "X Signals",
+      severity: inferSeverity(item.title, item.summary),
+      sources: item.sources.map((src) => ({
+        label: "X / Nitter",
+        url: src.url
+      }))
+    }));
+  }
+
+  function inferSeverity(...segments) {
+    const text = segments.join(" ").toLowerCase();
+    if (/(strike|missile|invasion|air raid|casualt|explosion|drone attack)/.test(text)) return "high";
+    if (/(military|troop|sanction|border|armed|ceasefire)/.test(text)) return "medium";
+    return "low";
+  }
+
   function inferCoordinates(seed = "", i = 0) {
     const hash = Array.from(String(seed)).reduce((sum, ch) => sum + ch.charCodeAt(0), 0) + i * 17;
     const lat = -50 + (hash % 110);
@@ -87,6 +131,8 @@
     config,
     fetchFromGDELT,
     fetchFromNewsAPI,
-    fetchFromRSS
+    fetchFromRSS,
+    fetchFromCuratedConflictFeeds,
+    fetchFromX
   };
 })();
