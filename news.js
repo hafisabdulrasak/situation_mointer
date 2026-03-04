@@ -14,17 +14,18 @@
 
   const middleEastKeywords = [
     "gaza", "israel", "palestinian", "west bank", "lebanon", "hezbollah", "syria", "damascus", "aleppo",
-    "iraq", "iran", "tehran", "yemen", "houthi", "red sea", "aden", "saudi", "uae", "qatar", "jordan"
+    "iraq", "iran", "tehran", "yemen", "houthi", "red sea", "aden", "saudi", "uae", "qatar", "jordan",
+    "doha", "abu dhabi", "dubai"
   ];
 
   function isMiddleEastWarUpdate(...segments) {
     const text = segments.join(" ").toLowerCase();
     const hasRegion = middleEastKeywords.some((kw) => text.includes(kw));
-    const hasConflict = /(war|conflict|strike|missile|drone|attack|raid|shell|artillery|military|troop|airstrike|ceasefire)/.test(text);
+    const hasConflict = /(war|conflict|strike|missile|drone|attack|raid|shell|artillery|military|troop|airstrike|ceasefire|truce|negotiation|talks|hostage)/.test(text);
     return hasRegion && hasConflict;
   }
 
-  async function fetchFromGDELT(query = "(war OR conflict OR strike OR missile OR drone) AND (Israel OR Gaza OR Lebanon OR Syria OR Iran OR Iraq OR Yemen OR Red Sea)", max = 12) {
+  async function fetchFromGDELT(query = "(war OR conflict OR strike OR missile OR drone OR ceasefire OR truce OR talks OR negotiation) AND (Israel OR Gaza OR Lebanon OR Syria OR Iran OR Iraq OR Yemen OR Red Sea OR Qatar OR UAE OR Doha OR Abu Dhabi)", max = 12) {
     const params = new URLSearchParams({
       query,
       mode: "ArtList",
@@ -53,7 +54,7 @@
       }));
   }
 
-  async function fetchFromNewsAPI(query = "(Israel OR Gaza OR Lebanon OR Syria OR Iran OR Yemen) AND (war OR strike OR missile OR drone)", pageSize = 10) {
+  async function fetchFromNewsAPI(query = "(Israel OR Gaza OR Lebanon OR Syria OR Iran OR Yemen OR Qatar OR UAE OR Doha OR Abu Dhabi OR Dubai) AND (war OR conflict OR strike OR missile OR drone OR ceasefire OR talks OR negotiation)", pageSize = 10) {
     if (!config.newsApiKey) return [];
     const params = new URLSearchParams({ q: query, pageSize: String(pageSize), apiKey: config.newsApiKey, language: "en" });
     const res = await fetch(`https://newsapi.org/v2/everything?${params}`);
@@ -111,7 +112,7 @@
       })));
   }
 
-  async function fetchFromX(searchQuery = "(Israel OR Gaza OR Lebanon OR Syria OR Iran OR Yemen OR Red Sea) (war OR missile OR strike OR drone) lang:en", max = 10) {
+  async function fetchFromX(searchQuery = "(Israel OR Gaza OR Lebanon OR Syria OR Iran OR Yemen OR Red Sea OR Qatar OR UAE OR Doha OR Abu Dhabi OR Dubai) (war OR conflict OR missile OR strike OR drone OR ceasefire OR talks OR negotiation) lang:en", max = 10) {
     const params = new URLSearchParams({ q: searchQuery, f: "tweets" });
     const rssUrl = `${config.xRssEndpoint}?${params}`;
     const items = await fetchFromRSS(rssUrl);

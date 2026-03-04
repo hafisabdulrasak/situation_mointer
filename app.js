@@ -127,10 +127,10 @@
 
   async function loadNewsEvents() {
     const tasks = [
-      NewsIngest.fetchFromGDELT("(war OR conflict OR strike OR missile OR drone) AND (Israel OR Gaza OR Lebanon OR Syria OR Iran OR Iraq OR Yemen OR Red Sea)", 12),
-      NewsIngest.fetchFromNewsAPI("(Israel OR Gaza OR Lebanon OR Syria OR Iran OR Yemen) AND (war OR strike OR missile OR drone)", 10),
+      NewsIngest.fetchFromGDELT("(war OR conflict OR strike OR missile OR drone OR ceasefire OR truce OR talks OR negotiation) AND (Israel OR Gaza OR Lebanon OR Syria OR Iran OR Iraq OR Yemen OR Red Sea OR Qatar OR UAE OR Doha OR Abu Dhabi)", 12),
+      NewsIngest.fetchFromNewsAPI("(Israel OR Gaza OR Lebanon OR Syria OR Iran OR Yemen OR Qatar OR UAE OR Doha OR Abu Dhabi OR Dubai) AND (war OR conflict OR strike OR missile OR drone OR ceasefire OR talks OR negotiation)", 10),
       NewsIngest.fetchFromCuratedConflictFeeds(5),
-      NewsIngest.fetchFromX("(Israel OR Gaza OR Lebanon OR Syria OR Iran OR Yemen OR Red Sea) (war OR missile OR strike OR drone) lang:en", 10)
+      NewsIngest.fetchFromX("(Israel OR Gaza OR Lebanon OR Syria OR Iran OR Yemen OR Red Sea OR Qatar OR UAE OR Doha OR Abu Dhabi OR Dubai) (war OR conflict OR missile OR strike OR drone OR ceasefire OR talks OR negotiation) lang:en", 10)
     ];
 
     const settled = await Promise.allSettled(tasks);
